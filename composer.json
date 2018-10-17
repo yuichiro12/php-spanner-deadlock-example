@@ -1,0 +1,12 @@
+{
+  "name": "yuichiro12/spanner-deadlock-example",
+  "type": "project",
+  "authors": [
+    {
+      "name": "yuichiro12"
+    }
+  ],
+  "require": {
+    "google/cloud-spanner": "^1.11.0"
+  }
+}
