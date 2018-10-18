@@ -3,17 +3,53 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use Google\Cloud\Spanner\SpannerClient;
+use Google\Cloud\Spanner\KeySet;
+
+/**
+ * This is a sample code to reproduce spanner transaction deadlock.
+ * Set environment variable `TEST_SPANNER_INSTANCE_ID` to designate your spanner instance.
+ * Also `GOOGLE_APPLICATION_CREDENTIAL` is required for authentication.
+ */
 
 $spanner = new SpannerClient();
 
-$db = $spanner->connect($_ENV["TEST_SPANNER_INSTANCE_ID"], );
+$db = $spanner->connect(getenv('TEST_SPANNER_INSTANCE_ID'), 'deadlock-test');
+const DDL = <<<DDL
+CREATE TABLE `TestTable` (
+  `id` STRING(8) NOT NULL,
+  `name` STRING(MAX)
+) PRIMARY KEY (`id`)
+DDL;
 
-//$userQuery = $db->execute('SELECT * FROM Users WHERE id = @id', [
-//    'parameters' => [
-//        'id' => $userId
-//    ]
-//]);
+try {
+    /** create database */
+    $operation = $db->create(['statements' => [DDL]]);
+    $operation->pollUntilComplete();
 
-$user = $userQuery->rows()->current();
+    /** insert record */
+    $db->insert('TestTable', [
+        'id' => 'einstein',
+        'name' => 'もふちゃん',
+    ]);
+    $client1 = (new SpannerClient())->connect(getenv('TEST_SPANNER_INSTANCE_ID'), 'deadlock-test');
+    $client2 = (new SpannerClient())->connect(getenv('TEST_SPANNER_INSTANCE_ID'), 'deadlock-test');
 
-echo 'Hello ' . $user['firstName'];
+    /** start transaction */
+    $transaction1 = $client1->transaction();
+    $transaction2 = $client2->transaction();
+    $keySet = new KeySet(['keys' => ['id' => 'einstein']]);
+    /** shared lock */
+    $res1 = $transaction1->read('TestTable', $keySet, ['name']);
+    $res2 = $transaction2->read('TestTable', $keySet, ['name']);
+    /** note that read() method is lazy */
+    $res1->rows()->current();
+    $res2->rows()->current();
+    /** upgrade shared lock to exclusive lock */
+    $transaction1->update('TestTable', ['id' => 'einstein', 'name' => 'もぷ1']);
+    $transaction2->update('TestTable', ['id' => 'einstein', 'name' => 'もぷ2']);
+    $transaction1->commit();
+    $transaction2->commit();
+} finally {
+    /** drop database */
+    $db->drop();
+}
