@@ -7,7 +7,6 @@
     }
   ],
   "require": {
-    "google/cloud-spanner": "^1.11.0",
-    "icicleio/icicle": "^0.9.6"
+    "google/cloud-spanner": "^1.11.0"
   }
 }

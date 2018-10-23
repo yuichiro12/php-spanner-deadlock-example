@@ -8,7 +8,7 @@ use Google\Cloud\Spanner\KeySet;
 /**
  * This is a sample code to reproduce spanner transaction deadlock.
  * Set environment variable `TEST_SPANNER_INSTANCE_ID` to designate your spanner instance.
- * Also `GOOGLE_APPLICATION_CREDENTIAL` is required for authentication.
+ * Also `GOOGLE_APPLICATION_CREDENTIALS` is required for authentication.
  */
 
 $spanner = new SpannerClient();
