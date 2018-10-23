@@ -9,9 +9,9 @@ cd php-spanner-deadlock-example
 composer install
 ```
 
-Set up environment variables `$GOOGLE_APPLICATION_CREDENTIAL` and `$TEST_SPANNER_INSTANCE_ID`.
+Set up environment variables `$GOOGLE_APPLICATION_CREDENTIALS` and `$TEST_SPANNER_INSTANCE_ID`.
 ```
-export GOOGLE_APPLICATION_CREDENTIAL=/path/to/credential.json
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credential.json
 export TEST_SPANNER_INSTANCE_ID=<SPANNER_INSTANCE_ID>
 ```
 
