@@ -47,9 +47,13 @@ try {
     /** upgrade shared lock to exclusive lock */
     $transaction1->update('TestTable', ['id' => 'einstein', 'name' => 'もぷ1']);
     $transaction2->update('TestTable', ['id' => 'einstein', 'name' => 'もぷ2']);
+    $time_start = microtime(true);
     $transaction1->commit();
     $transaction2->commit();
 } finally {
+    /** time while deadlock */
+    $time = microtime(true) - $time_start;
+    echo "time to detect deadlock: ".$time."sec\n";
     /** drop database */
     $db->drop();
 }
